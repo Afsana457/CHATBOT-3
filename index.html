@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Assistance – Fraud Intelligence Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.10);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1917;
+    --text2: #5c5a54;
+    --text3: #8c8a84;
+    --accent: #2d2a8e;
+    --accent-light: #eeedf8;
+    --accent-mid: #534AB7;
+    --accent-text: #3C3489;
+    --success: #0f6e56;
+    --success-bg: #e1f5ee;
+    --amber: #854f0b;
+    --amber-bg: #faeeda;
+    --red: #a32d2d;
+    --red-bg: #fcebeb;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.10);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2rem 1rem 3rem;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    width: 100%;
+    max-width: 680px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-mark {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: var(--shadow);
+  }
+  .logo-mark svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .page-title h1 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; color: var(--text); letter-spacing: -0.3px; }
+  .page-title p { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+  /* ── Chat shell ── */
+  .chat-shell {
+    width: 100%;
+    max-width: 680px;
+    background: var(--surface);
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Top bar ── */
+  .top-bar {
+    background: var(--accent);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .bot-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .bot-avatar svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .bot-info h2 { font-size: 15px; font-weight: 600; color: #fff; }
+  .bot-info p { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 1px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #5dcaa5; margin-left: auto; box-shadow: 0 0 0 2px rgba(93,202,165,0.3); }
+
+  /* ── Breadcrumb ── */
+  .breadcrumb {
+    padding: 10px 1.25rem;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-height: 38px;
+  }
+  .breadcrumb.hidden { display: none; }
+  .bc-link {
+    font-size: 12px;
+    color: var(--accent-mid);
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .bc-link:hover { text-decoration: underline; }
+  .bc-sep { font-size: 12px; color: var(--text3); }
+  .bc-current { font-size: 12px; color: var(--text2); }
+
+  /* ── Messages ── */
+  .messages {
+    padding: 1.5rem 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 200px;
+  }
+
+  .bubble {
+    max-width: 85%;
+    padding: 0.8rem 1rem;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .bubble.bot {
+    background: var(--surface2);
+    color: var(--text);
+    border-radius: 4px 14px 14px 14px;
+    align-self: flex-start;
+    border: 1px solid var(--border);
+  }
+  .bubble strong { font-weight: 600; }
+
+  /* ── Incidence card ── */
+  .incidence-card {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent-mid);
+    border-radius: 0 10px 10px 0;
+    padding: 1rem 1.1rem;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .inc-label {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--accent-text);
+    background: rgba(83,74,183,0.12);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  /* ── Detail content ── */
+  .detail-content {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .detail-content ul {
+    padding-left: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .detail-content li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .detail-content li::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-mid);
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+
+  .hint-text {
+    font-size: 12.5px;
+    color: var(--text3);
+    margin-top: 6px;
+  }
+
+  /* ── Options area ── */
+  .options-area {
+    padding: 0.5rem 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .opts-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 2px;
+    margin-top: 4px;
+  }
+
+  .opt-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    width: 100%;
+  }
+  .opt-btn:hover { background: var(--surface2); border-color: var(--accent-mid); }
+  .opt-btn:active { transform: scale(0.99); }
+  .opt-btn .num {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-mid);
+    min-width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .opt-btn .icon-wrap {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .opt-btn .icon-wrap svg { width: 16px; height: 16px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .opt-btn .btn-label { flex: 1; font-weight: 500; }
+  .opt-btn .chevron { margin-left: auto; flex-shrink: 0; }
+  .opt-btn .chevron svg { width: 14px; height: 14px; fill: none; stroke: var(--text3); stroke-width: 2; }
+
+  .opt-btn.back-btn {
+    color: var(--text2);
+    border-style: dashed;
+    border-color: var(--border);
+    font-weight: 400;
+  }
+  .opt-btn.back-btn:hover { color: var(--text); border-color: var(--border2); }
+
+  /* Detail option color themes */
+  .opt-btn.impact .icon-wrap { background: var(--amber-bg); }
+  .opt-btn.impact .icon-wrap svg { stroke: var(--amber); }
+  .opt-btn.laws .icon-wrap { background: var(--success-bg); }
+  .opt-btn.laws .icon-wrap svg { stroke: var(--success); }
+  .opt-btn.justice .icon-wrap { background: var(--red-bg); }
+  .opt-btn.justice .icon-wrap svg { stroke: var(--red); }
+
+  .opt-btn.active-detail {
+    background: var(--accent-light);
+    border-color: var(--accent-mid);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0;
+  }
+
+  /* ── Footer ── */
+  .chat-footer {
+    padding: 0.65rem 1.25rem;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .footer-text { font-size: 11.5px; color: var(--text3); }
+  .footer-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text3); }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-in { animation: fadeUp 0.2s ease forwards; }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    body { padding: 1rem 0.5rem 2rem; }
+    .page-header { margin-bottom: 1rem; }
+    .bubble { max-width: 95%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  </div>
+  <div class="page-title">
+    <h1>AI Assistance</h1>
+    <p>Financial Fraud Intelligence Guide — Interactive Case Explorer</p>
+  </div>
+</div>
+
+<div class="chat-shell">
+  <div class="top-bar">
+    <div class="bot-avatar">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </div>
+    <div class="bot-info">
+      <h2>AI Assistance</h2>
+      <p>Fraud Intelligence · Always available</p>
+    </div>
+    <div class="status-dot"></div>
+  </div>
+
+  <div class="breadcrumb hidden" id="breadcrumb"></div>
+  <div class="messages" id="messages"></div>
+  <div class="options-area" id="options-area"></div>
+
+  <div class="chat-footer">
+    <span class="footer-text">Click any option to navigate</span>
+    <div class="footer-dot"></div>
+    <span class="footer-text">Use back buttons to go up</span>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  "Insider Dealing": {
+    cases: {
+      "RIL – Reliance Petroleum Shares Manipulation": {
+        incidence: "In 2007, Reliance Industries Limited (RIL) used twelve front agents to bypass regulatory position limits, cornering over 93% of the open interest in November RPL futures. RIL simultaneously sold approximately 202.9 million RPL shares to artificially depress the stock price. On the futures expiry day (November 29, 2007), RIL dumped 22.5 million shares in the final ten minutes, crashing the settlement price to ₹215.25 per share — generating unlawful gains of ₹447.27 crore.",
+        "Impact": [
+          "Retail and institutional investors suffered massive losses as the depressed settlement price transferred wealth to RIL and its agents.",
+          "By cornering 93%+ of open interest, RIL crippled normal price discovery mechanisms.",
+          "SEBI determined RIL generated ₹447.27 crore in illegal futures profits.",
+          "Public trust in India's derivatives market was severely undermined.",
+          "As India's largest private company, RIL faced intense media and political scrutiny."
+        ],
+        "Existing Laws": [
+          "SEBI Act, 1992 (Sections 11, 11B, 12A) — statutory power to investigate and penalise misconduct.",
+          "Insider Trading Regulations, 1992 — used during initial probe of promoter-level information access.",
+          "PFUTP Regulations, 2003 (Regulations 3 & 4) — basis for SEBI's 2017 disgorgement order (later partly overturned by Supreme Court).",
+          "Derivatives Position Limit Rules, 2001 — limits bypassed via 12 front agents; ₹25 crore penalty upheld by the Supreme Court in May 2026."
+        ],
+        "Justice & Punishment": [
+          "SEBI disgorgement order (March 2017): ₹447.27 crore plus 12% annual interest; one-year F&O segment ban imposed on RIL.",
+          "SAT Appeal (November 2020): 2:1 majority upheld SEBI's manipulation findings and the full disgorgement amount.",
+          "SEBI Penalty Order (January 2021): ₹70 crore total — ₹25 cr on RIL, ₹15 cr personally on Mukesh Ambani, ₹30 cr on two SEZ entities.",
+          "Supreme Court ruling (May 2026): Overturned fraud findings and ₹447.27 cr disgorgement order; ordered SEBI to refund ₹250 crore to RIL, while upholding the ₹25 crore penalty for position limit violations."
+        ]
+      },
+      "Hindustan Lever – BBLIL Insider Dealings": {
+        incidence: "In March 1996, Hindustan Lever Limited (HLL) purchased 8 lakh shares of Brooke Bond Lipton India Limited (BBLIL) from the Unit Trust of India (UTI) at ₹350.35 per share — two weeks before a public merger announcement. HLL shared five common directors with BBLIL and possessed Unpublished Price-Sensitive Information (UPSI) about the planned merger, making it an 'insider' under SEBI regulations.",
+        "Impact": [
+          "UTI suffered a direct financial loss by selling its shares at a price that failed to reflect the impending merger premium.",
+          "Market integrity was compromised by granting HLL an illegitimate informational advantage over uninformed participants.",
+          "As SEBI's very first insider trading action, it exposed structural immaturity in India's nascent enforcement machinery.",
+          "Public trust was deeply shaken that a reputable multinational would engage in insider dealing.",
+          "The appeal outcome created systemic legal ambiguity regarding the UPSI definition when information is already circulating through media speculation."
+        ],
+        "Existing Laws": [
+          "SEBI (Prohibition of Insider Trading) Regulations, 1992 (Sections 2(e), 2(k), 3, 4) — defined insiders and prohibited UPSI-based trading.",
+          "SEBI Act, 1992 (Sections 11, 11B) — granted statutory authority to investigate and issue enforcement orders.",
+          "Section 24, SEBI Act — allowed criminal prosecution of directors knowingly involved in insider trading activities."
+        ],
+        "Justice & Punishment": [
+          "SEBI's order (March 1998): HLL found guilty; ordered to pay ₹3.04 crore in compensation to UTI; criminal prosecution launched against five executive directors.",
+          "Securities Appellate Authority (SAA) ruling: Overturned SEBI's insider trading findings. The authority ruled the merger was 'generally known' via newspaper speculation and did not qualify as UPSI under the strict legal definition. HLL was acquitted and criminal prosecution of directors was dropped."
+        ]
+      }
+    }
+  },
+  "Market Abuse": {
+    cases: {
+      "Harshad Mehta Securities Scam (1992)": {
+        incidence: "Harshad Mehta, dubbed the 'Big Bull', diverted funds from the banking system by exploiting weak controls and forging bank receipts. He used diverted capital to buy enormous quantities of stocks — ACC shares skyrocketed from approximately ₹200 to nearly ₹9,000. He then liquidated positions at peak prices. Total unlawful gains exceeded ₹3,500–4,000 crore (approximately US$1 billion in 1992 terms).",
+        "Impact": [
+          "Exposure of the fraud triggered a massive market crash, wiping out substantial market capitalisation and inflicting severe losses on retail and institutional investors.",
+          "Genuine supply-demand pricing was replaced with artificial capital-driven inflation.",
+          "The crisis exposed deep institutional flaws in India's paper-based settlement framework and regulatory oversight.",
+          "Public trust in the stock exchange collapsed; the banking sector faced a severe liquidity crunch.",
+          "The scale of the scam forced an immediate reassessment of financial transaction transparency and clearing procedures."
+        ],
+        "Existing Laws": [
+          "Joint Parliamentary Committee (JPC) Mandate, 1992 — established to probe regulatory gaps; 1993 statutory report demanded tighter supervision over banking-market intersections.",
+          "SEBI Act, 1992 (reinforced framework) — amended post-scam with expanded autonomous authority to investigate and penalise market misconduct.",
+          "Banking Regulation Directives (RBI) — restricted bank exposure to securities and eliminated loopholes surrounding bank receipt management."
+        ],
+        "Justice & Punishment": [
+          "CBI and SEBI initiated sweeping civil and criminal fraud proceedings against Harshad Mehta and his associates.",
+          "SEBI handed down permanent market exclusions and substantial financial penalties against Mehta and affiliated entities.",
+          "Mehta was arrested in 1992 and remained entangled in criminal litigation until his death in 2001. Partial asset recovery left a major portion of investor losses uncompensated; institutional reform became the case's primary legacy."
+        ]
+      },
+      "NSE Co-Location Scandal (2010–2015)": {
+        incidence: "Specific brokerages — notably OPG Securities — exploited the NSE's 'tick-by-tick' data feed by logging into co-location servers at optimised intervals to secure the fastest connections, receiving critical price data milliseconds ahead of other participants. Senior NSE insiders allegedly colluded by steering favoured brokers to the quickest server nodes, creating a multi-tiered information environment that systematically advantaged a privileged few.",
+        "Impact": [
+          "Regular investors suffered ongoing financial erosion by constantly executing trades against a structurally advantaged counterparty.",
+          "The core principle of equitable market access was broken, establishing a multi-tiered information environment.",
+          "The scandal proved market abuse could originate from technological gaps inside exchange infrastructure itself.",
+          "Public exposure of whistle-blower complaints in 2015–16 severely tarnished the NSE's global reputation and indefinitely derailed its planned IPO.",
+          "The case forced a broad industry realisation that high-frequency trading technologies required aggressive algorithmic oversight."
+        ],
+        "Existing Laws": [
+          "SEBI (Prohibition of Fraudulent and Unfair Trade Practices) Regulations — invoked following a 2016 TAC probe to penalise the NSE for failing to ensure fair infrastructure access.",
+          "SEBI Market Infrastructure Regulations — mandated equal data dissemination architectures and prevented information asymmetry.",
+          "Anti-Corruption and PMLA statutes — applied to investigate criminal employee collusion, data manipulation, and illicit wealth accumulation."
+        ],
+        "Justice & Punishment": [
+          "SEBI disgorgement and blockade (April 2019): NSE ordered to disgorge ₹624.9 crore plus accumulated interest; barred from tapping capital markets for six months.",
+          "Former MD & CEO Chitra Ramkrishna and senior executives faced heavy monetary fines and five-year bans from holding market infrastructure positions.",
+          "OPG Securities and participating brokerages faced structural suspensions and fines. CBI and ED launched criminal probes; NSE completely revamped its data distribution technology and installed stricter internal anti-collusion protocols."
+        ]
+      }
+    }
+  },
+  "Money Laundering": {
+    cases: {
+      "Punjab National Bank (PNB) – Nirav Modi Scam": {
+        incidence: "Between 2011 and 2018, Nirav Modi and associates colluded with rogue employees at PNB's Brady House branch in Mumbai. Bank officials issued fraudulent Letters of Undertaking (LoUs) without requiring collateral or routing transactions through the Core Banking System (CBS). Using these LoUs, Modi's overseas shell companies obtained short-term credit from overseas branches of other Indian banks. Funds were laundered through dummy corporations across the UAE, Hong Kong, and the UK to purchase real estate and luxury goods.",
+        "Impact": [
+          "PNB absorbed a devastating loss of over ₹14,000 crore, severely impacting its balance sheet and profitability.",
+          "Massive loopholes were exposed in the Indian banking system, particularly the lack of integration between SWIFT and banks' internal core banking software.",
+          "The RBI entirely banned the issuance of LoUs for trade credits, increasing borrowing costs for legitimate importers.",
+          "Public trust in public sector banks was severely shaken, especially as the perpetrators fled the country before the scam became public."
+        ],
+        "Existing Laws": [
+          "Prevention of Money Laundering Act (PMLA), 2002 — the ED used this to trace proceeds of crime, map shell networks, and attach domestic and international properties.",
+          "Indian Penal Code (IPC) & Prevention of Corruption Act — the CBI filed FIRs for criminal conspiracy, cheating, and corruption by public servants.",
+          "Fugitive Economic Offenders Act (FEOA), 2018 — enacted as a direct result of this scam; empowers confiscation of all assets of economic offenders who flee prosecution."
+        ],
+        "Justice & Punishment": [
+          "Nirav Modi was arrested in London in 2019; declared a 'Fugitive Economic Offender'. UK courts cleared extradition; he continues to exhaust final legal appeals.",
+          "Mehul Choksi fled to Antigua and Barbuda, sparking ongoing diplomatic and legal battles for extradition.",
+          "The ED confiscated and auctioned hundreds of crores of assets including rare paintings, luxury cars, watches, and prime real estate; proceeds returned to a consortium led by PNB.",
+          "Several PNB executives and junior officials were arrested and faced criminal prosecution for their complicity."
+        ]
+      },
+      "Satyam Computer Services Scandal": {
+        incidence: "Satyam's founder Ramalinga Raju systematically falsified accounts for nearly a decade: creating approximately 7,500 fake invoices, forging bank statements showing over ₹5,040 crore in fictitious cash and bank balances, and maintaining 13,000 'ghost employees' on payroll to misappropriate corporate funds. Siphoned capital was funnelled into promoter-controlled real estate entities — Maytas Infrastructure and Maytas Properties. The scheme unravelled in December 2008 when Raju attempted to use Satyam funds to acquire these family businesses for ₹1,600 crore, triggering a 55% single-day stock crash.",
+        "Impact": [
+          "Shareholders lost an estimated ₹14,000 crore as Satyam's stock plummeted from ₹544 to ₹11.",
+          "The global reputation of India's booming IT services sector was severely tarnished; statutory auditors (PwC) were heavily penalised.",
+          "Over 50,000 employees faced sudden job insecurity until the Indian government intervened to save the company, eventually auctioning it to Tech Mahindra."
+        ],
+        "Existing Laws": [
+          "Companies Act, 1956 — used to prosecute falsification of accounts, criminal breach of trust, and failure of fiduciary duties.",
+          "SEBI Act, 1992 — pursued insider trading charges as Raju and his family had sold shares at inflated prices before confessing.",
+          "Indian Penal Code (IPC) — charges included cheating (Sec 420), forgery (Sec 467/468), and criminal conspiracy (Sec 120B).",
+          "Prevention of Money Laundering Act (PMLA), 2002 — the ED traced funds siphoned into Maytas real estate ventures and attached properties belonging to Raju and family members."
+        ],
+        "Justice & Punishment": [
+          "Special CBI court (April 2015): Ramalinga Raju and nine others — including his brother and two PwC auditors — found guilty of corporate fraud.",
+          "Raju sentenced to 7 years of rigorous imprisonment; he and his brother were each fined ₹5.5 crore.",
+          "SEBI ordered disgorgement of ₹1,850 crore (with interest) from insider trading. The ED successfully confiscated properties purchased with laundered funds."
+        ]
+      }
+    }
+  },
+  "Bribery": {
+    cases: {
+      "The Corporate Bribery–Fraud Nexus in India": {
+        incidence: "In India, bribery is not isolated — it is a systemic enabler of major corporate fraud. The nexus manifests through three channels: (1) procurement fraud, where kickbacks secure government contracts by circumventing competitive bidding; (2) regulatory evasion, where bribes accelerate permits, bypass environmental rules, or conceal financial inaccuracies; (3) banking fraud, where corrupt employees facilitate large collateral-free loans, creating massive NPAs. This is driven by the 'Fraud Triangle': opportunity (weak internal audits), pressure (market demands), and rationalisation of bribes as a necessary business expense. Data shows 19.9% of South Asian businesses face bribery requests in public dealings.",
+        "Impact": [
+          "Exposure of accounting fraud triggers stock market panic, causing significant drops in company performance and destroying shareholder value.",
+          "Financial misconduct damages investor trust, halts capital inflows, entangles resources in legal battles, and limits access to affordable financing.",
+          "Corporate leaders face swift reputational harm, severe labour market repercussions, elevated job loss rates, and potential civil consequences.",
+          "Ongoing corporate fraud generates a harmful cycle leading to significant fluctuations across various financial sectors in India.",
+          "Operating in an unpredictable environment with hidden wrongdoing discourages international companies from pursuing long-term investments.",
+          "Corporate collapses cause systemic anxiety — unemployment, reduced public tax revenues, and disrupted resource flows.",
+          "Fraud dampens FDI while significant regulatory obstacles and bribe demands discourage small businesses from joining the formal sector."
+        ],
+        "Existing Laws": [
+          "Companies Act, 2013 (Section 447) — classifies corporate fraud as a grave, non-bailable criminal offence with mandatory prison terms of up to 10 years.",
+          "Prevention of Corruption Act (PCA), 1988 — 2018 amendment criminalised bribe-giving by private enterprises with corporate penalties and individual executive liability.",
+          "Prevention of Money Laundering Act (PMLA), 2002 — categorises illicit funds as 'proceeds of crime', enabling government to freeze and confiscate assets prior to final verdict.",
+          "Bharatiya Nyaya Sanhita (BNS), 2023 & SEBI Act, 1992 — address fundamental criminal acts like fraud, forgery, and breach of trust while protecting investors."
+        ],
+        "Justice & Punishment": [
+          "Multi-agency enforcement: SFIO handles complex business collapses; ED monitors financial transactions and executes asset seizures; CBI investigates frauds involving public servants or banks.",
+          "Investigations face severe bottlenecks, taking an average of 57 months to identify corporate fraud due to independent agency operations and crowded courts.",
+          "Section 447 mandates minimum 3 years imprisonment (up to 10 years), rising to minimum 7 years when the fraud impacts the general public.",
+          "Courts can levy penalties matching or tripling the defrauded sum and aggregate sequential sentences across multiple violated laws."
+        ]
+      },
+      "PNB – Nirav Modi: Bribery Dimension": {
+        incidence: "The 2018 PNB–Nirav Modi scandal (~$2 billion / ₹14,000+ crore) illustrates how sustained internal bribery enables massive corporate fraud. Compromised junior bank staff received illicit payments to consistently issue multi-million-dollar LoUs without collateral or credit due diligence. Corrupt employees intentionally bypassed PNB's Core Banking System (CBS) and transmitted guarantees directly via SWIFT, keeping senior management and auditors unaware of mounting liabilities for six years (2011–2017).",
+        "Impact": [
+          "The fraudulent scheme drained approximately $2 billion, greatly exacerbating India's public sector NPA crisis and making credit costlier for legitimate businesses.",
+          "PNB's share price dropped significantly on revelation, erasing billions in shareholder value instantly.",
+          "A trader exploiting internal vulnerabilities for six years shattered investor faith in public sector banks' fraud prevention capacity.",
+          "RBI mandated full SWIFT-CBS integration across all commercial banks in response.",
+          "PNB was forced to overhaul its entire risk management framework and transition toward AI-powered auditing."
+        ],
+        "Existing Laws": [
+          "IPC, 1860 (Sections 120-B, 420, 409, 468) — criminal conspiracy, cheating, criminal breach of trust by a banker, and forgery for unauthorised LoU generation.",
+          "Prevention of Corruption Act, 1988 (Section 13) — confronted unlawful actions of public bank officials who accepted bribes to bypass proper credit verification.",
+          "PMLA, 2002 — funds funnelled into foreign real estate and front companies classified as 'proceeds of crime'; ED empowered to seize assets.",
+          "Fugitive Economic Offenders Act (FEOA), 2018 — emergency legislation enabling swift confiscation of domestic and international assets of offenders who flee."
+        ],
+        "Justice & Punishment": [
+          "ED froze assets exceeding ₹1,400 crore including luxury residences, wind farms, and foreign jewellery.",
+          "CBI and Interpol issued a Red Corner Notice. UK courts applied 'Double Criminality', rejected bail, and sanctioned extradition.",
+          "CBI charged former PNB Managing Director and multiple executive directors for negligence and dismissing RBI alerts.",
+          "Nirav Modi has been held in London's HMP Wandsworth since 2019 without conviction, awaiting final trial. Upon extradition he faces up to 10 years for corporate fraud and 3–7 years for bribery."
+        ]
+      }
+    }
+  },
+  "Fraudulent & Wrongful Trading": {
+    cases: {
+      "Satyam Computer Services Scandal": {
+        incidence: "Satyam Computer Services was India's fourth-largest IT company by the mid-2000s, employing 53,000 people across 66 countries. On January 7, 2009, founder Ramalinga Raju confessed that accounts had been falsified for nearly seven years using: approximately 7,500 fake invoices, fabricated bank statements showing ₹5,040 crore in non-existent cash, and 13,000 'ghost employees'. The scheme unravelled in December 2008 when Raju attempted a ₹1,600 crore acquisition of family-owned Maytas entities using corporate funds — triggering a 55% single-day stock crash and subsequent regulatory exposure.",
+        "Impact": [
+          "Shareholders suffered devastating losses as the stock plummeted from ₹544 to ₹11, wiping out ₹14,000 crore in market value.",
+          "Long-term falsification completely distorted market price discovery mechanisms, deceiving lenders, investors, and regulators for years.",
+          "Massive gaps in external auditing oversight and corporate governance were exposed; Price Waterhouse India faced severe sanctions.",
+          "India's reputation as a safe FDI destination was severely tarnished globally, especially within its booming IT sector.",
+          "Over 53,000 employees faced sudden job insecurity until the government intervened and auctioned the company to Tech Mahindra."
+        ],
+        "Existing Laws": [
+          "IPC, 1860 (Sections 120B, 420, 409, 468, 471) — criminal conspiracy, cheating, criminal breach of trust, forgery, and use of forged documents.",
+          "Companies Act, 1956 (Section 628) — prosecuted filing of false annual reports and deceptive accounting disclosures over seven years.",
+          "SEBI Act, 1992 (Section 12A) — penalised misleading market disclosures and pursued insider trading violations by promoters.",
+          "PMLA, 2002 (Sections 3 & 4) — ED traced siphoned capital and attached real estate purchased via the Maytas dummy network."
+        ],
+        "Justice & Punishment": [
+          "Special CBI court conviction (April 2015): Ramalinga Raju and nine others — including his brother and two PwC auditors — found guilty; sentenced to 7 years rigorous imprisonment and a ₹5 crore fine.",
+          "SEBI imposed a ₹2,200 crore penalty and a 14-year market ban on Raju and associates (2018).",
+          "US SEC settlement (2011): $10 million penalty for international financial fraud charges.",
+          "Price Waterhouse India auditors removed from the ICAI register for professional misconduct. Tech Mahindra acquired Satyam for ₹5,800 crore to restore investor confidence."
+        ]
+      },
+      "IL&FS Corporate Debt Crisis": {
+        incidence: "Infrastructure Leasing & Financial Services (IL&FS) controlled 348 subsidiaries with debt exceeding ₹91,000 crore. The crisis erupted in August 2018 when it defaulted on a ₹450 crore repayment — shocking markets as IL&FS had held a Triple-A credit rating for years. SFIO investigations revealed management had hidden toxic bad debts through 'ever-greening' loans (issuing new debt to weak subsidiaries to repay old defaults), systematically misreported income, exploited the 348-entity web to mask true liabilities, and unconstitutionally altered the Employee Welfare Trust to enrich management.",
+        "Impact": [
+          "Citizens and institutions holding IL&FS bonds and debentures suffered immense financial erosion, directly jeopardising retirement savings tied up in mutual, pension, and provident funds.",
+          "Concealment of structural insolvency disrupted credit allocations nationally, as toxic non-performing exposures were masked as stable assets.",
+          "The collapse proved credit rating agencies were unable to identify deep-seated financial irregularities — a critical regulatory failure.",
+          "The default triggered a sweeping systemic liquidity panic across India's NBFC sector during 2018–19.",
+          "Several major government-backed infrastructure projects faced extensive execution delays due to siphoned and mismanaged funds."
+        ],
+        "Existing Laws": [
+          "Companies Act, 2013 (Section 447) — SFIO criminally charged top executives and external auditors for structural corporate fraud; up to 10 years imprisonment.",
+          "Companies Act, 2013 (Sections 241–242) — Central Government petitioned NCLT to supersede the board on public interest grounds.",
+          "Companies Act, 2013 (Section 130) — NCLT authorised formal reopening and re-auditing of the group's financial books from January 2019.",
+          "Insolvency and Bankruptcy Code, 2016 (Section 66) — applied for wrongful and fraudulent trading; management held liable for continuing operations while aware of impending insolvency.",
+          "PMLA, 2002 — ED mapped illicit fund transfers through the subsidiary network; resulted in executive arrests and property searches."
+        ],
+        "Justice & Punishment": [
+          "Supersession of the board (October 2018): NCLT removed the entire IL&FS board in one of India's largest regulatory interventions; installed an independent body led by Uday Kotak.",
+          "Vice Chairman Hari Sankaran arrested by SFIO in April 2019 for fraud and wrongful losses; NCLT and ED issued asset freezes.",
+          "Global auditing firms Deloitte and BSR & Co. (KPMG) formally charged under Section 447 for failing to report irregularities; Supreme Court upheld SFIO's authority to freeze their assets.",
+          "Newly appointed board began selling assets, toll roads, and communications towers; resolved substantial portions of the ₹91,000 crore debt. No final criminal convictions yet — trials remain in prosecution stage."
+        ]
+      }
+    }
+  }
+};
+
+const FRAUD_TYPES = Object.keys(DATA);
+let state = { level: "home", fraud: null, case: null, detail: null };
+
+const svg = {
+  chevronRight: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9,18 15,12 9,6"/></svg>`,
+  arrowLeft: `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>`,
+  impact: `<svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+  laws: `<svg viewBox="0 0 24 24"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>`,
+  justice: `<svg viewBox="0 0 24 24"><path d="M12 22V12M12 12L3 7M12 12l9-5M3 7l9-5 9 5M3 7v10l9 5 9-5V7"/></svg>`,
+  fraud: `<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+};
+
+function addBotBubble(container, html) {
+  const d = document.createElement("div");
+  d.className = "bubble bot animate-in";
+  d.innerHTML = html;
+  container.appendChild(d);
+}
+
+function addLabel(container, text) {
+  const d = document.createElement("div");
+  d.className = "opts-label";
+  d.textContent = text;
+  container.appendChild(d);
+}
+
+function addDivider(container) {
+  const d = document.createElement("div");
+  d.className = "divider";
+  container.appendChild(d);
+}
+
+function addOptBtn(container, num, label, fn, extraClass, iconSvg) {
+  const btn = document.createElement("button");
+  btn.className = "opt-btn animate-in" + (extraClass ? " " + extraClass : "");
+  let numHtml = num
+    ? `<span class="num">${num}</span>`
+    : (iconSvg ? `<span class="icon-wrap">${iconSvg}</span>` : "");
+  btn.innerHTML = `${numHtml}<span class="btn-label">${label}</span><span class="chevron">${svg.chevronRight}</span>`;
+  btn.onclick = fn;
+  container.appendChild(btn);
+}
+
+function addBackBtn(container, label, fn) {
+  const btn = document.createElement("button");
+  btn.className = "opt-btn back-btn animate-in";
+  btn.innerHTML = `<span style="display:flex;align-items:center;">${svg.arrowLeft}</span><span class="btn-label" style="margin-left:4px;">${label}</span>`;
+  btn.onclick = fn;
+  container.appendChild(btn);
+}
+
+function updateBreadcrumb() {
+  const bc = document.getElementById("breadcrumb");
+  const parts = [];
+  if (state.level !== "home") parts.push({ label: "Home", goto: "home" });
+  if (state.fraud && state.level !== "fraud") parts.push({ label: state.fraud, goto: "fraud" });
+  if (state.case && (state.level === "case" || state.level === "detail")) parts.push({ label: state.case, goto: "case" });
+
+  if (parts.length === 0) {
+    bc.classList.add("hidden");
+    return;
+  }
+  bc.classList.remove("hidden");
+  const currentLabel = state.level === "detail" ? state.detail : (state.level === "case" ? state.case : (state.level === "fraud" ? state.fraud : "Home"));
+  bc.innerHTML = parts.map(p =>
+    `<span class="bc-link" onclick="goTo('${p.goto}')">${p.label}</span><span class="bc-sep"> / </span>`
+  ).join("") + `<span class="bc-current">${currentLabel}</span>`;
+}
+
+function render() {
+  const msgs = document.getElementById("messages");
+  const opts = document.getElementById("options-area");
+  msgs.innerHTML = "";
+  opts.innerHTML = "";
+  updateBreadcrumb();
+
+  if (state.level === "home") {
+    addBotBubble(msgs, `Welcome! I'm your <strong>AI Assistance</strong> on financial fraud. I cover 5 categories of fraud with real Indian case studies. Select a fraud type below to explore cases, applicable laws, and justice outcomes.`);
+    addLabel(opts, "Select a fraud category:");
+    const colors = ["#534AB7", "#0f6e56", "#854f0b", "#993556", "#a32d2d"];
+    FRAUD_TYPES.forEach((ft, i) => {
+      addOptBtn(opts, `${i + 1}`, ft, () => { state.level = "fraud"; state.fraud = ft; state.case = null; state.detail = null; render(); });
+    });
+
+  } else if (state.level === "fraud") {
+    const cases = Object.keys(DATA[state.fraud].cases);
+    addBotBubble(msgs, `You selected <strong>${state.fraud}</strong>. There are <strong>${cases.length} recorded cases</strong>. Choose a case to explore:`);
+    addLabel(opts, "Select a case:");
+    cases.forEach((c, i) => {
+      addOptBtn(opts, `${i + 1}`, c, () => { state.level = "case"; state.case = c; state.detail = null; render(); });
+    });
+    addDivider(opts);
+    addBackBtn(opts, "Back to fraud categories", () => { state.level = "home"; state.fraud = null; render(); });
+
+  } else if (state.level === "case") {
+    const caseData = DATA[state.fraud].cases[state.case];
+    addBotBubble(msgs, `<strong>${state.case}</strong>`);
+    const card = document.createElement("div");
+    card.className = "incidence-card animate-in";
+    card.innerHTML = `<span class="inc-label">Incidence of Fraud</span><br><br>${caseData.incidence}`;
+    msgs.appendChild(card);
+    const hint = document.createElement("p");
+    hint.className = "hint-text";
+    hint.textContent = "Explore the details below:";
+    msgs.appendChild(hint);
+
+    addLabel(opts, "Select a detail:");
+    addOptBtn(opts, null, "Impact", () => { state.level = "detail"; state.detail = "Impact"; render(); }, "impact", svg.impact);
+    addOptBtn(opts, null, "Existing Laws", () => { state.level = "detail"; state.detail = "Existing Laws"; render(); }, "laws", svg.laws);
+    addOptBtn(opts, null, "Justice & Punishment", () => { state.level = "detail"; state.detail = "Justice & Punishment"; render(); }, "justice", svg.justice);
+    addDivider(opts);
+    addBackBtn(opts, `Back to ${state.fraud} cases`, () => { state.level = "fraud"; state.case = null; render(); });
+
+  } else if (state.level === "detail") {
+    const caseData = DATA[state.fraud].cases[state.case];
+    const items = caseData[state.detail];
+    addBotBubble(msgs, `<strong>${state.detail}</strong> — ${state.case}`);
+    const dc = document.createElement("div");
+    dc.className = "detail-content animate-in";
+    dc.innerHTML = `<ul>${items.map(it => `<li><span>${it}</span></li>`).join("")}</ul>`;
+    msgs.appendChild(dc);
+
+    addLabel(opts, "Explore more:");
+    const others = ["Impact", "Existing Laws", "Justice & Punishment"].filter(d => d !== state.detail);
+    const clsMap = { "Impact": "impact", "Existing Laws": "laws", "Justice & Punishment": "justice" };
+    const svgMap = { "Impact": svg.impact, "Existing Laws": svg.laws, "Justice & Punishment": svg.justice };
+    others.forEach(d => {
+      addOptBtn(opts, null, d, () => { state.detail = d; render(); }, clsMap[d], svgMap[d]);
+    });
+    addDivider(opts);
+    addBackBtn(opts, "Back to case overview", () => { state.level = "case"; render(); });
+  }
+
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function goTo(level) {
+  if (level === "home") { state.level = "home"; state.fraud = null; state.case = null; state.detail = null; }
+  else if (level === "fraud") { state.level = "fraud"; state.case = null; state.detail = null; }
+  else if (level === "case") { state.level = "case"; state.detail = null; }
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
